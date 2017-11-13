@@ -1,0 +1,25 @@
+#prices {
+    margin: 20px;
+}
+
+.price-card {
+    margin: 5px;
+    cursor: pointer;
+}
+
+.price-card h3 {
+    font-weight: 400;
+    margin: 0;
+}
+
+.crypto-icon svg {
+    width: 20px;
+    height: 20px;
+    margin: 3px;
+    float: right;
+    transition: fill .1s linear;
+}
+
+.price-card:hover .crypto-icon svg {
+    fill: #0E5A8A;
+}
