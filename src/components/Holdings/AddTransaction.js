@@ -74,7 +74,7 @@ class AddTransaction extends Component {
                             rightElement={
                                 <div className="pt-select pt-minimal">
                                     <select defaultValue={selectedCurrency}>
-                                    {_.map(CURRENCIES, c => <option key={c} value={c}>{c}</option>)}
+                                        {_.map(CURRENCIES, c => <option key={c} value={c}>{c}</option>)}
                                     </select>
                                 </div>
                             }

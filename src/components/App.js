@@ -17,7 +17,9 @@ import Header from './Header/Header';
 import Holdings from './Holdings/Holdings';
 import Prices from './Prices/Prices';
 
-import { FocusStyleManager } from "@blueprintjs/core";
+import ManageTransactions from './ManageTransactions/ManageTransactions';
+
+import { FocusStyleManager, Alert, Callout } from "@blueprintjs/core";
 FocusStyleManager.onlyShowFocusOnTabs();
 
 window.MainStore = MainStore;
@@ -26,9 +28,21 @@ class App extends Component {
   render() {
     return (
       <div className="App pt-monospace-text">
+        <ManageTransactions />
         <Header />
+        <Callout className="pt-intent-primary" style={{textAlign: 'center'}}>
+          <h5>This is beta software.</h5>
+          <p>BlockPortfolio helps you better understand your crypto-asset holdings and portfolio performance. Powered by <a href="https://blockstack.org/">Blockstack</a> to persist data and settings.</p>
+        </Callout>
         <Holdings />
         <Prices />
+        <Alert
+          isOpen={window.location.protocol === 'https'}
+        />
+        <Callout style={{padding: '20px 40px'}}>
+          <h5>Coming Soon:</h5>
+          <p>Charts, pricing tables, import from exchanges, export to csv and date range selections</p>
+        </Callout>
       </div>
     );
   }

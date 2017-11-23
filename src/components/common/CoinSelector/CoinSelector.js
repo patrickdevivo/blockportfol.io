@@ -21,6 +21,10 @@ class CoinSelector extends Component {
     }
 
     componentDidMount() {
+        if (MainStore.coinlist && MainStore.coinlist.BTC) {
+            this.setState({selectedCoin: MainStore.coinlist.BTC})
+            this.props.onSelected(MainStore.coinlist.BTC)
+        }
         this.coinlistObserver = observe(MainStore, 'coinlist', ({newValue, oldValue}) => {
             if (_.isNull(oldValue) && newValue) {
                 this.setState({selectedCoin: newValue.BTC})
@@ -62,9 +66,9 @@ class CoinSelector extends Component {
             >
                 <Button
                     className="pt-minimal"
-                    text={_.isNull(selectedCoin) ? 'BTC' : selectedCoin.Symbol}
-                    disabled={_.isNull(selectedCoin)}
-                    loading={_.isNull(selectedCoin)}
+                    text={_.isNull(selectedCoin) ? '...' : selectedCoin.Symbol}
+                    disabled={_.isNull(coinlist)}
+                    loading={_.isNull(coinlist)}
                     rightIconName="double-caret-vertical"
                 />
             </Select>

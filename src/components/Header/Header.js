@@ -1,7 +1,6 @@
 import React, {Component} from 'react';
 import {observer} from 'mobx-react';
 import MainStore from 'stores/MainStore';
-
 import {Button, Tag} from '@blueprintjs/core';
 
 import './styles.css';
