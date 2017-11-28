@@ -8,7 +8,7 @@ import {CURRENCIES} from 'helpers/constants'
 
 import './styles.css';
 
-import {Callout, Intent, Spinner, Button, Popover, Position} from '@blueprintjs/core';
+import {Callout, Intent, Spinner, Button, Popover, Position, NonIdealState, ProgressBar} from '@blueprintjs/core';
 import {DateRangePicker} from '@blueprintjs/datetime';
 
 class Performance extends Component {
@@ -22,9 +22,11 @@ class Performance extends Component {
 
     render() {
         const {selectedCurrency, selectedDateRange} = MainStore.toJS();
-        const {holdings, unrealized, totalUnrealized, realizedFIFO, printSelectedDateRange} = MainStore;
+        const {holdings, unrealized, totalUnrealized, realizedFIFO, printSelectedDateRange, loadingTransactions} = MainStore;
         const totalUnrealizedPositive = !_.isNull(totalUnrealized) ? totalUnrealized.percent >= 0 : null;
         const totalUnrealizedZero = (!_.isNull(totalUnrealizedPositive) && totalUnrealizedPositive) ? (totalUnrealized.percent === 0) : null;
+
+        if (loadingTransactions) return null
 
         return (
             <div id="performance" className="grid">
