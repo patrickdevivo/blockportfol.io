@@ -7,10 +7,8 @@ import './styles.css';
 import numbro from 'numbro';
 import {CURRENCIES} from 'helpers/constants'
 import {Callout, Intent, NonIdealState, Tag, ProgressBar, Spinner, Button, Popover, Position} from '@blueprintjs/core';
-import {DateRangePicker} from '@blueprintjs/datetime';
 
 import AddTransaction from './AddTransaction';
-import PercentBar from './PercentBar';
 
 class Holdings extends Component {
     render() {
@@ -28,31 +26,19 @@ class Holdings extends Component {
                 <div className="col-12">
                     <div className="pt-card">
                         <div className="grid">
-                            <div className="col-4">
-                                <h4>Holdings {_.size(transactions) ? <Button className="pt-minimal pt-intent-primary" text={`edit ${_.size(transactions)} transaction${_.size(transactions) > 1 ? 's' : ''}`} onClick={MainStore.toggleManageTransactions} /> : null}</h4>
+                            <div className="col-8">
+                                <h3>Holdings {_.size(transactions) ? <Button className="pt-minimal pt-intent-primary" text={`edit ${_.size(transactions)} transaction${_.size(transactions) > 1 ? 's' : ''}`} onClick={MainStore.toggleManageTransactions} /> : null}</h3>
                             </div>
 
-                            <div className="col-4">
-
+                            <div className="col-2">
+                                <Callout intent={(totalUnrealized && totalUnrealized.percent) ? (totalUnrealized.percent > 0 ? Intent.SUCCESS : Intent.DANGER) : Intent.DEFAULT} iconName={totalUnrealizedPositive ? (totalUnrealizedZero ? "chevron-right" : "chevron-up") : "chevron-down"} style={{textAlign: 'right'}}>
+                                    {totalUnrealized ? <h5 style={{margin: 0}}>{`${numbro(totalUnrealized.value).format('0,0.00')} ${selectedCurrency}`}</h5> : <Spinner className="pt-small" />}
+                                </Callout>
                             </div>
-
-                            <div className="col-4" style={{textAlign: 'right'}}>
-                                <div className="pt-select pt-minimal">
-                                    <select value={selectedCurrency} onChange={e => MainStore.selectCurrency(e.target.value)}>
-                                        {_.map(CURRENCIES, c => (
-                                            <option key={c} value={c}>{c}</option>
-                                        ))}
-                                    </select>
-                                </div>
-            
-                                {/*<Popover position={Position.BOTTOM_RIGHT}>
-                                    <Button text={selectedDateRange ? printSelectedDateRange : "Choose Date Range"} className="pt-minimal" rightIconName="timeline-events" />
-                                    <DateRangePicker
-                                        value={selectedDateRange}
-                                        allowSingleDayRange
-                                        onChange={MainStore.selectDateRange}
-                                    />
-                                </Popover>*/}
+                            <div className="col-2">
+                                <Callout intent={(totalUnrealized && totalUnrealized.percent) ? (totalUnrealized.percent > 0 ? Intent.SUCCESS : Intent.DANGER) : Intent.DEFAULT} iconName={totalUnrealizedPositive ? (totalUnrealizedZero ? "chevron-right" : "chevron-up") : "chevron-down"} style={{textAlign: 'right'}}>
+                                    {totalUnrealized ? <h5 style={{margin: 0}}>{numbro(totalUnrealized.percent).format('0,0.00%')}</h5> : <Spinner className="pt-small" />}
+                                </Callout>
                             </div>
 
                             <div className="col-12" style={{margin: '40px 0'}}>
@@ -93,30 +79,7 @@ class Holdings extends Component {
                                     </table>
                                 }
                             </div>
-
-
-                            <div className="col-3">
-                                <Callout intent={(totalUnrealized && totalUnrealized.percent) ? (totalUnrealized.percent > 0 ? Intent.SUCCESS : Intent.DANGER) : Intent.DEFAULT} iconName={totalUnrealizedPositive ? (totalUnrealizedZero ? "chevron-right" : "chevron-up") : "chevron-down"} style={{textAlign: 'right'}}>
-                                    {totalUnrealized ? <h5 style={{margin: 0}}>{`${numbro(totalUnrealized.value).format('0,0.00')} ${selectedCurrency}`} <span className="pt-text-muted">Unrealized</span></h5> : <Spinner className="pt-small" />}
-                                </Callout>
-                            </div>
-                            <div className="col-3">
-                                <Callout intent={(totalUnrealized && totalUnrealized.percent) ? (totalUnrealized.percent > 0 ? Intent.SUCCESS : Intent.DANGER) : Intent.DEFAULT} iconName={totalUnrealizedPositive ? (totalUnrealizedZero ? "chevron-right" : "chevron-up") : "chevron-down"} style={{textAlign: 'right'}}>
-                                    {totalUnrealized ? <h5 style={{margin: 0}}>{numbro(totalUnrealized.percent).format('0,0.00%')} <span className="pt-text-muted">Unrealized</span></h5> : <Spinner className="pt-small" />}
-                                </Callout>
-                            </div>
-
-                            <div className="col-3">
-                                <Callout intent={(realizedFIFO && realizedFIFO.value) ? (realizedFIFO.value > 0 ? Intent.SUCCESS : Intent.DANGER) : Intent.DEFAULT} iconName={((realizedFIFO && realizedFIFO.value)) ? ((realizedFIFO.value > 0) ? "chevron-up" : "chevron-down") : "chevron-right"} style={{textAlign: 'right'}}>
-                                    {realizedFIFO ? <h5 style={{margin: 0}}>{numbro(realizedFIFO.value).format('0,0.00')} {selectedCurrency} <span className="pt-text-muted">Realized</span></h5> : <Spinner className="pt-small" />}
-                                </Callout>
-                            </div>
-
-                            <div className="col-3">
-                                <Callout intent={(realizedFIFO && realizedFIFO.value) ? (realizedFIFO.value > 0 ? Intent.SUCCESS : Intent.DANGER) : Intent.DEFAULT} iconName={((realizedFIFO && realizedFIFO.value)) ? ((realizedFIFO.value > 0) ? "chevron-up" : "chevron-down") : "chevron-right"} style={{textAlign: 'right'}}>
-                                    {realizedFIFO ? <h5 style={{margin: 0}}>{numbro(realizedFIFO.percent).format('0,0.00%')} <span className="pt-text-muted">Realized</span></h5> : <Spinner className="pt-small" />}
-                                </Callout>
-                            </div>
+                            
 
                             <AddTransaction />
                         </div>

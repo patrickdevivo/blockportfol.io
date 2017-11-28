@@ -82,6 +82,7 @@ class MainStore {
 
     logoutWithBlockstack = action(() => {
         blockstack.signUserOut();
+        this.transactions = []
         this.user = null;
     })
 
@@ -114,6 +115,11 @@ class MainStore {
         const coinsReq = await axios.get(`${CRYPTO_COMPARE_BASE}/all/coinlist`);
         return coinsReq.data;
     }
+
+    async fetchHistoDay(fsym, days) {
+        const req = await axios.get(`${CRYPTO_COMPARE_BASE}/histoday?fsym=${fsym}&tsym=${this.selectedCurrency}&limit=${days}`);
+        return req.data;
+    } 
 
     setCoins = action(async () => {
         const coinlist = await this.fetchCoins();

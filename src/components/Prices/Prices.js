@@ -3,13 +3,14 @@ import {observer} from 'mobx-react';
 import _ from 'lodash';
 import autoBind from 'react-autobind';
 import MainStore from 'stores/MainStore';
-import numbro from 'numbro';
 
-import {Button} from '@blueprintjs/core';
 import {CRYPTOS, CRYPTO_ICONS} from 'helpers/constants';
 import Isvg from 'react-inlinesvg'
 
+import PriceCard from './PriceCard';
+
 import './styles.css';
+import { Button } from '@blueprintjs/core';
 
 class Prices extends Component {
     constructor(props) {
@@ -17,12 +18,22 @@ class Prices extends Component {
         autoBind(this);
 
         this.state = {
-            prices: _.fromPairs(_.map(CRYPTOS, c => [c, null]))
+            prices: _.fromPairs(_.map(CRYPTOS, c => [c, null])),
+            days: 30
         }
     }
 
     componentDidMount() {
         this.fetchPrices();
+        this.poll = setInterval(this.fetchPrices, 5*1000)
+    }
+
+    componentWillUnmount() {
+        clearInterval(this.poll)
+    }
+
+    setDays(days) {
+        this.setState({days})
     }
 
     async fetchPrices() {
@@ -36,32 +47,20 @@ class Prices extends Component {
     }
 
     render() {
-        const {prices} = this.state;
-        const {selectedCurrency} = MainStore.toJS();
+        const {prices, days} = this.state;
+        
         return (
             <div id="prices" className="grid">
+                <div className="col-12" style={{textAlign: 'right'}}>
+                    <div className="pt-button-group">
+                        <Button active={days === 90} text={'90d'} onClick={() => this.setDays(90)} />
+                        <Button active={days === 60} text={'60d'} onClick={() => this.setDays(60)} />
+                        <Button active={days === 30} text={'30d'} onClick={() => this.setDays(30)} />
+                        <Button active={days === 10} text={'10d'} onClick={() => this.setDays(10)} />
+                    </div>
+                </div>
                 {_.map(prices, (price, sym) => {
-                    const loading = _.isNull(price);
-                    const displayPrice = loading ? null : numbro(price[selectedCurrency]).format('0,0.00')
-
-                    if (loading) return (
-                        <div key={sym} className="col-4">
-                            <div className="pt-card pt-elevation-1 price-card">
-                                <h3 className={`pt-skeleton`}>{sym}</h3>
-                            </div>
-                        </div>
-                    )
-                    
-                    else return (
-                        <div key={sym} className="col-4">
-                            <div className="pt-card pt-elevation-1 price-card">
-                                <Isvg className="crypto-icon" src={CRYPTO_ICONS[sym]} />
-                                <h3>
-                                    <span className="pt-text-muted" style={{color: '#137CBD'}}>{sym}</span>: {displayPrice} {selectedCurrency}
-                                </h3>
-                            </div>
-                        </div>
-                    )
+                    return <PriceCard key={sym} sym={sym} price={price} days={days} />
                 })}
             </div>
         )

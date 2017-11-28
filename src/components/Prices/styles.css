@@ -5,6 +5,11 @@
 .price-card {
     margin: 5px;
     cursor: pointer;
+    padding: 0;
+}
+
+.price-card-body {
+    padding: 20px;
 }
 
 .price-card h3 {

@@ -15,6 +15,7 @@ import MainStore from 'stores/MainStore';
 
 import Header from './Header/Header';
 import Holdings from './Holdings/Holdings';
+import Performance from './Performance/Performance';
 import Prices from './Prices/Prices';
 
 import ManageTransactions from './ManageTransactions/ManageTransactions';
@@ -32,9 +33,9 @@ class App extends Component {
         <Header />
         <Callout className="pt-intent-primary" style={{textAlign: 'center'}}>
           <h5>This is beta software.</h5>
-          <p>BlockPortfolio helps you better understand your crypto-asset holdings and portfolio performance. Powered by <a href="https://blockstack.org/">Blockstack</a> to persist data and settings.</p>
         </Callout>
         <Holdings />
+        <Performance />
         <Prices />
         <Alert
           isOpen={window.location.protocol === 'https'}

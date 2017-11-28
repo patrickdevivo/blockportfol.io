@@ -50,6 +50,7 @@
     "react-dom": "^16.0.0",
     "react-inlinesvg": "^0.7.0",
     "react-router-dom": "^4.2.2",
+    "recharts": "^1.0.0-beta.5",
     "serve": "latest",
     "shortid": "^2.2.8",
     "style-loader": "0.19.0",
