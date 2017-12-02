@@ -17,6 +17,7 @@ import Header from './Header/Header';
 import Holdings from './Holdings/Holdings';
 import Performance from './Performance/Performance';
 import Prices from './Prices/Prices';
+import CoinInfo from './CoinInfo/CoinInfo';
 
 import ManageTransactions from './ManageTransactions/ManageTransactions';
 
@@ -37,12 +38,10 @@ class App extends Component {
         <Holdings />
         <Performance />
         <Prices />
-        <Alert
-          isOpen={window.location.protocol === 'https'}
-        />
+        <CoinInfo />
         <Callout style={{padding: '20px 40px'}}>
           <h5>Coming Soon:</h5>
-          <p>Charts, pricing tables, import from exchanges, export to csv and date range selections</p>
+          <p>Import from exchanges, export to csv, annualized gain calculations</p>
         </Callout>
       </div>
     );

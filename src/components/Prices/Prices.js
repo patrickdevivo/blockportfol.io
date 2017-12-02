@@ -19,13 +19,13 @@ class Prices extends Component {
 
         this.state = {
             prices: _.fromPairs(_.map(CRYPTOS, c => [c, null])),
-            days: 30
+            days: 90
         }
     }
 
     componentDidMount() {
         this.fetchPrices();
-        this.poll = setInterval(this.fetchPrices, 5*1000)
+        this.poll = setInterval(this.fetchPrices, 7*1000)
     }
 
     componentWillUnmount() {
@@ -40,10 +40,9 @@ class Prices extends Component {
         const {prices} = this.state;
         for (const sym in prices) {
             MainStore.fetchCryptoPrices(sym).then(price => {
-                this.setState({prices: Object.assign(prices, {[sym]:price})})
+                this.setState({prices: Object.assign(prices, {[sym]:price})});
             });
         }
-        
     }
 
     render() {
@@ -53,6 +52,7 @@ class Prices extends Component {
             <div id="prices" className="grid">
                 <div className="col-12" style={{textAlign: 'right'}}>
                     <div className="pt-button-group">
+                        <Button active={days === 365} text={'365d'} onClick={() => this.setDays(365)} />
                         <Button active={days === 90} text={'90d'} onClick={() => this.setDays(90)} />
                         <Button active={days === 60} text={'60d'} onClick={() => this.setDays(60)} />
                         <Button active={days === 30} text={'30d'} onClick={() => this.setDays(30)} />

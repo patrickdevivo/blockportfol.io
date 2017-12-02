@@ -15,19 +15,24 @@ class MainStore {
     constructor() {
         extendObservable(this, {
             selectedCurrency: 'USD',
-            selectedCrypto: 'BTC',
-            selectedDateRange: null,
             coinlist: null,
             user: null,
             transactions: [],
             priceCache: observable.map(),
+            historyCache: observable.map(),
 
             holdings: computed(this.holdings),
+            totalCurrentHoldings: computed(this.totalCurrentHoldings),
             unrealized: computed(this.unrealized),
             totalUnrealized: computed(this.totalUnrealized),
             realizedFIFO: computed(this.realizedFIFO),
-            printSelectedDateRange: computed(this.printSelectedDateRange),
+            realizedLIFO: computed(this.realizedLIFO),
+            totalRealizedFIFO: computed(this.totalRealizedFIFO),
+            totalRealizedLIFO: computed(this.totalRealizedLIFO),
             filteredTransactions: computed(this.filteredTransactions),
+            cryptosTransacted: computed(this.cryptosTransacted),
+
+            coinInfo: false,
 
             lifo: false,
             manageTransactionsOpen: false,
@@ -43,7 +48,11 @@ class MainStore {
                 const heldCurrencies = _.keys(newValue.byCoin);
                 const prices = await this.setPriceCache(heldCurrencies);
             }
-        })
+        });
+
+        if (window.location.protocol === 'https:') window.location.protocol = 'http:'
+
+        // setInterval(() => this.updatePriceCache(), 20*1000);
     }
 
     async setPriceCache(symbols) {
@@ -56,6 +65,22 @@ class MainStore {
         this.priceCache.merge(req.data);
     }
 
+    async updatePriceCache() {
+        const heldCurrencies = _.keys(this.holdings.byCoin);
+        await this.setPriceCache(heldCurrencies);
+        await this.updateHistoricalCache();
+    }
+
+    async updateHistoricalCache() {
+        const symbols = this.cryptosTransacted;
+        for (const s in symbols) {
+            const sym = symbols[s];
+            if (this.historyCache.has(sym)) continue;
+            const history = await this.fetchHistoDay(sym, 2000);
+            const priceData = _.zipObject(_.map(history.Data, p => moment(new Date(p.time*1000)).format('YYYY-MM-DD')), history.Data)
+            this.historyCache.set(sym, priceData)
+        }
+    }
 
     auth = action(async () => {
         if (blockstack.isSignInPending()) {
@@ -90,21 +115,6 @@ class MainStore {
         if (!_.includes(CURRENCIES, currency)) throw new Error(`Unsupported Currency ${currency}`);
         this.selectedCurrency = currency;
     })
-
-    selectCrypto = action((crypto) => {
-        if (!_.includes(CRYPTOS, crypto)) throw new Error(`Unsupported Crypto ${crypto}`);
-        this.selectedCrypto = crypto;
-    })
-
-    selectDateRange = action((dr) => {
-        // dr -> [start, end]
-        this.selectedDateRange = dr;
-    })
-
-    printSelectedDateRange() {
-        if (_.isNull(this.selectedDateRange)) return null
-        return `${moment(this.selectedDateRange[0]).format('YYYY-MM-DD')} to ${moment(this.selectedDateRange[1]).format('YYYY-MM-DD')}`
-    }
 
     async fetchCryptoPrices(crypto) {
         const priceReq = await axios.get(`${CRYPTO_COMPARE_BASE}/price?fsym=${crypto}&tsyms=${_.join(CURRENCIES, ',')}`)
@@ -170,6 +180,10 @@ class MainStore {
         this.saveTransactions();
     })
 
+    cryptosTransacted() {
+        return _.uniq(_.map(this.transactions, t => t.coinSym))
+    }
+
     filteredTransactions() {
         // filters transactions based on selected fiat and date range, all transactions up to end date
         const {selectedCurrency, selectedDateRange} = this;
@@ -199,7 +213,7 @@ class MainStore {
         return computed(() => {
             const transactions = _.filter(this.transactions, t => t.currency === this.selectedCurrency && t.date <= asOf);
             // const transactions = this.filteredTransactions;
-            const currentCurrencyTransactions = _.filter(transactions, t => t.currency !== this.selectedCrypto)
+            const currentCurrencyTransactions = _.filter(transactions, t => t.currency === this.selectedCurrency)
             const holdings = _.groupBy(currentCurrencyTransactions, t => t.coinSym);
             return {
                 byCoin: _.mapValues(holdings, (transactions, sym) => {
@@ -218,6 +232,18 @@ class MainStore {
 
     holdings() {
         return this.holdingsAsOf(new Date())
+    }
+
+    totalCurrentHoldings() {
+        const {holdings, priceCache, selectedCurrency} = this;
+        let sum = 0;
+        for (const sym in holdings.byCoin) {
+            const h = holdings.byCoin[sym];
+            const price = priceCache.get(sym);
+            if (!price) return null;
+            sum += h.q * price[selectedCurrency];
+        }
+        return sum;
     }
 
     unrealizedAsOf(asOf) {
@@ -271,31 +297,51 @@ class MainStore {
         if (!asOf) asOf = new Date();
         lifo = !!lifo // cast to boolean
         const transactions = this.transactionsAsOf(asOf);
-
+        const holdings = this.holdingsAsOf(asOf);
+        
         return computed(() => {
-            const buys = _.filter(transactions, t => t.bought);
-            const sells = _.filter(transactions, t => !t.bought);
-            const proceeds = _.reduce(sells, (p, s) => p += s.coinQ*s.coinP, 0);
-            const soldUnits = _.reduce(sells, (u, s) => u += s.coinQ, 0);
-            let costBase = 0;
-            let units = 0;
-            const sortedBuys = _.orderBy(buys, ['date'], [lifo ? 'desc' : 'asc']);
-            for (const i in sortedBuys) {
-                const b = sortedBuys[i];
-                if (units + b.coinQ < soldUnits){
-                    units += b.coinQ;
-                    costBase += b.coinQ * b.coinP;
+            return _.mapValues(holdings.byCoin, (h, sym) => {
+                const buys = _.filter(transactions, t => t.bought && sym === t.coinSym);
+                const sells = _.filter(transactions, t => !t.bought && sym === t.coinSym);
+                const proceeds = _.reduce(sells, (p, s) => p += s.coinQ*s.coinP, 0);
+                const soldUnits = _.reduce(sells, (u, s) => u += s.coinQ, 0);
+                let costBase = 0;
+                let units = 0;
+                const sortedBuys = _.orderBy(buys, ['date'], [lifo ? 'desc' : 'asc']);
+                for (const i in sortedBuys) {
+                    const b = sortedBuys[i];
+                    if (units + b.coinQ < soldUnits){
+                        units += b.coinQ;
+                        costBase += b.coinQ * b.coinP;
+                    }
+                    else {
+                        const remaining = soldUnits - units;
+                        costBase += remaining * b.coinP;
+                        units += remaining;
+                    }
                 }
-                else {
-                    const remaining = soldUnits - units;
-                    costBase += remaining * b.coinP;
-                    units += remaining;
-                }
+                return {
+                    value: proceeds - costBase,
+                    percent: costBase ? (proceeds - costBase)/costBase : 0
+                };
+            })
+        }).get()
+    }
+
+    totalRealizedAsOf(lifo, asOf) {
+        const byCoin = this.realizedAsOf(lifo, asOf);
+        return computed(() => {
+            let totalV = 0;
+            let percSum = 0;
+            for (const sym in byCoin) {
+                const r = byCoin[sym];
+                totalV += r.value
+                percSum += r.value * r.percent;
             }
             return {
-                value: proceeds - costBase,
-                percent: costBase ? (proceeds - costBase)/costBase : 0
-            };
+                value: totalV,
+                percent: totalV ? (percSum / totalV) : 0
+            }
         }).get()
     }
 
@@ -305,6 +351,46 @@ class MainStore {
 
     realizedLIFO() {
         return this.realizedAsOf(true, new Date())
+    }
+
+    totalRealizedFIFO() {
+        return this.totalRealizedAsOf(false, new Date())
+    }
+
+    totalRealizedLIFO() {
+        return this.totalRealizedAsOf(true, new Date())
+    }
+
+    performance(startDate, endDate) {
+        return computed(() => {
+            let c = this.selectedCurrency;
+            let dt = moment(startDate);
+            let data = [];
+            while (dt < endDate) {
+                dt.add(1, 'days');
+                if (dt.diff(moment(), 'days') === 0) continue;
+                let d = {day: dt.format('YYYY-MM-DD')};
+                const holdings = this.holdingsAsOf(dt.toDate())
+                // console.log(holdings)
+                let total = 0;
+                for (const sym in holdings.byCoin) {
+                    const h = holdings.byCoin[sym];
+                    const history = this.historyCache.get(sym);
+                    if (!history) continue;
+                    const p = history[dt.format('YYYY-MM-DD')];
+                    if (!p) continue;
+                    d[sym] = h.q * p.close;
+                    total += h.q * p.close;
+                }
+                d.total = total;
+                data.push(d)
+            }
+            return data;
+        }).get()
+    }
+
+    setCoinInfo(sym) {
+        this.coinInfo = sym;
     }
    
     toJS() {

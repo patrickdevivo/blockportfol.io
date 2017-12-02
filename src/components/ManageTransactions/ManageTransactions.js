@@ -56,7 +56,7 @@ class ManageTransactions extends Component {
                                         <td>{t.bought ? "Bought" : "Sold"}</td>
                                         <td>{coin ? coin.FullName : <ProgressBar />}</td>
                                         <td>{numbro(t.coinQ).format('0,0.0000')}</td>
-                                        <td>{numbro(t.coinP).format('0,0.00')}</td>
+                                        <td>{numbro(t.coinP).format('0,0.00')} {t.currency}</td>
                                         <td>{date.format('YYYY-MM-DD')}</td>
                                         <td><Button className="pt-intent-danger pt-minimal pt-fill" text="remove" onClick={() => this.removeTransaction(t.id)} /></td>
                                     </tr>

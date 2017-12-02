@@ -70,10 +70,12 @@ class AddTransaction extends Component {
                         <InputGroup
                             placeholder={`Price per Coin`}
                             value={coinP}
-                            onChange={e => this.setState({coinP: this.numericOnly(e.target.value)})}
+                            onChange={e => {
+                                this.setState({coinP: this.numericOnly(e.target.value)})}
+                            }
                             rightElement={
                                 <div className="pt-select pt-minimal">
-                                    <select defaultValue={selectedCurrency}>
+                                    <select defaultValue={selectedCurrency} onChange={e => this.setState({selectedCurrency: e.target.value})}>
                                         {_.map(CURRENCIES, c => <option key={c} value={c}>{c}</option>)}
                                     </select>
                                 </div>

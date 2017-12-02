@@ -60,7 +60,7 @@ class CoinSelector extends Component {
                     onSelected(selected);
                 }}
                 itemPredicate={(query, item, index) => {
-                    return `${item.Symbol} ${item.Name} ${item.Id}`.toLowerCase().indexOf(query.toLowerCase()) >= 0;
+                    return `${item.Symbol} ${item.FullName} ${item.Id}`.toLowerCase().indexOf(query.toLowerCase()) >= 0;
                 }}
                 noResults={<MenuItem disabled text="No results." />}
             >

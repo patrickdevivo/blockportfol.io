@@ -62,7 +62,7 @@ class PriceCard extends Component {
         
         else return (
             <div className="col-4">
-                <div className="pt-card pt-elevation-1 price-card">
+                <div className="pt-card pt-elevation-1 price-card" onClick={() => MainStore.setCoinInfo(sym)}>
                     <div className="price-card-body">
                         <Isvg className="crypto-icon" src={CRYPTO_ICONS[sym]} />
                         <h3>
