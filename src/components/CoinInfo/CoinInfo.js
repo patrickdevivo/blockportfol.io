@@ -50,8 +50,9 @@ class CoinInfo extends Component {
             <Dialog
                 isOpen={!!coinInfo}
                 iconName={'chart'}
-                title={'Coin Info'}
+                title={coinInfo || 'Coin Info'}
                 style={{width: '90%'}}
+                onClose={() => MainStore.setCoinInfo(null)}
             >
                     <div className="pt-dialog-body">
                         {_.isNull(coinInfo) ? <NonIdealState visual={<Spinner/>} /> :

@@ -19,7 +19,7 @@ class MainStore {
             user: null,
             transactions: [],
             priceCache: observable.map(),
-            historyCache: observable.map(),
+            historyCache: {},
 
             holdings: computed(this.holdings),
             totalCurrentHoldings: computed(this.totalCurrentHoldings),
@@ -75,10 +75,10 @@ class MainStore {
         const symbols = this.cryptosTransacted;
         for (const s in symbols) {
             const sym = symbols[s];
-            if (this.historyCache.has(sym)) continue;
+            if (this.historyCache[sym]) continue;
             const history = await this.fetchHistoDay(sym, 2000);
             const priceData = _.zipObject(_.map(history.Data, p => moment(new Date(p.time*1000)).format('YYYY-MM-DD')), history.Data)
-            this.historyCache.set(sym, priceData)
+            this.historyCache[sym] = priceData;
         }
     }
 
@@ -154,7 +154,7 @@ class MainStore {
             this.setLoadingTransactions(false);
             return;
         }
-        const s = await blockstack.getFile('/transactions.json');
+        const s = await blockstack.getFile('/transactions.json', true);
         const t = JSON.parse(s, (k, v) => (typeof v === 'string' && (!isNaN(Date.parse(v))) ? new Date(v) : v));
         if (_.isArray(t)) this.transactions = t;
         console.log(t)
@@ -166,7 +166,7 @@ class MainStore {
         const transactions = this.transactions;
         const s = JSON.stringify(transactions);
         console.log(s)
-        await blockstack.putFile('/transactions.json', s);
+        await blockstack.putFile('/transactions.json', s, true);
     }
 
     addTransaction = action((bought, coinQ, coinSym, coinP, currency, date) => {
@@ -375,7 +375,7 @@ class MainStore {
                 let total = 0;
                 for (const sym in holdings.byCoin) {
                     const h = holdings.byCoin[sym];
-                    const history = this.historyCache.get(sym);
+                    const history = this.historyCache[sym];
                     if (!history) continue;
                     const p = history[dt.format('YYYY-MM-DD')];
                     if (!p) continue;
