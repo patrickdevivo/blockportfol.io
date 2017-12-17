@@ -80,6 +80,7 @@ class Performance extends Component {
                                     </thead>
                                     <tbody>
                                         {_.map(realized, (h, sym) => {
+                                            if (!coinlist) return null;
                                             const coin = coinlist[sym] ? coinlist[sym] : null;
 
                                             return (
