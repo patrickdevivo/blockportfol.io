@@ -154,7 +154,7 @@ class MainStore {
             this.setLoadingTransactions(false);
             return;
         }
-        const s = await blockstack.getFile('/transactions.json', true);
+        const s = await blockstack.getFile('/transactions_enc.json', true);
         const t = JSON.parse(s, (k, v) => (typeof v === 'string' && (!isNaN(Date.parse(v))) ? new Date(v) : v));
         if (_.isArray(t)) this.transactions = t;
         console.log(t)
@@ -166,7 +166,7 @@ class MainStore {
         const transactions = this.transactions;
         const s = JSON.stringify(transactions);
         console.log(s)
-        await blockstack.putFile('/transactions.json', s, true);
+        await blockstack.putFile('/transactions_enc.json', s, true);
     }
 
     addTransaction = action((bought, coinQ, coinSym, coinP, currency, date) => {
